@@ -1,6 +1,9 @@
 MagicMapper is a lightweight framework for auto-mapping POJOs. It is very useful when you have data access and/or transition objects and you want to map one to another.
 
-MagicMapper supports a direct auto-mapping (hereinafter called "perfect match"). It means that without any configuration you can one object to object of another class by their fields equal by type and name. It also supports configurable mapping. It means that in your application entry point, you need to configure how object from one class maps to object to another class, by either providing field names equation or by delegating a certain behavior.
+MagicMapper supports a direct auto-mapping (hereinafter called "perfect match"). It means that without any configuration you can map one object to object of another class by their fields equal by type and name. It also supports configurable mapping. It means that in your application entry point, you need to configure how object from one class maps to object to another class, by either providing field names equation or by delegating a certain behavior.
+
+General rule: ALL YOUR POJOS NEED TO HAVE A PARAMETERLESS CONSTRUCTOR
+
 
 # Perfect Match
 
@@ -258,4 +261,65 @@ Again, removing magic strings can be done by providing a delegate. Since books s
 
 And voila! You have mapped your entities.
 
-Currently `MagicMapper` does not support collection transforming. It will support it in the near future.
+# Collection
+
+In perfect match scenario  collection references are replicated to the mapped object. It's highly not recommended to rely on same reference while mapping objects. Avoid perfect match for POJOs that have mutable complex fields (including collections).
+
+Let's say we are in the `Complex Objects` scenario, but our Authors have a collection of books. The `AuthorEntity` has an `ArrayList<BookEntity>` and the `AuthorDto` has a `List<BookDto>`. You still have two (actualy three) ways:
+
+## Providing Field Name Mappings
+
+A third implementation of the `FieldMap` interface is introduced, called `CollectionField`. It has the same signature as `ComplexField` except that it creates target collection of the same type as the source collection, which means your source collection should be easily instantiatable with parameterless constructor (such as `ArrayList`, `HashSet`, etc...) and then repeats the provided delegate for each element of the source collection and adding the transformed object to the target collection then returning it.
+
+**Creating Source Author**
+
+    List<BookEntity> books = new ArrayList<>();
+    books.add(new BookEntity(12, "Firestarter"));
+    books.add(new BookEntity(42, "War && Peace"));
+
+    AuthorEntity entity = new AuthorEntity(6, "John", bornOn, books);
+    
+    
+**Mapping configuration:**
+
+    mapper
+        .from(AuthorEntity.class)
+        .to(AuthorDto.class)
+        .forRule(
+            new SimpleField("id", "id"),
+            new SimpleField("authorName", "name"),
+            new SimpleField("date", "bornOn"),
+            new CollectionField("bookEntity", "bookDto", this.mapper.getExistingBinding(BookEntity.class, BookDto.class))
+        );
+        
+## Providing a Delegate
+
+You can manually foreach the source collection in the delegate and add each element in the target collection. Three helper method overloads are introduced in the `MagicMapper` interface called `toCollection()`. 
+
+    <T, C, S extends Collection<T>, R extends Class<C>, V extends Collection<C>> V toCollection(R targetType, S source)
+    
+This one takes a target type e.g. `BookDto.class` and source collection e.g. `HashSet<BookEntity>`, creates a new `HashSet<BookDto>`, the calls `map(BookEntity.class, BookDto.class)` for each element in the source collection and adds it to the target collection. As a result it returns the target collection.
+
+    <T, C, R extends Collection<C>> R toCollection(R targetCollection, Class<C> targetType, Collection<T> source)
+    
+The one behaves almost the same as the above one except it does not create a new collection, but expects the target collection instance to be provided from the outside. This allow you to transform e.g. a `HashSet` to a `LinkedList`.
+
+    <T, R extends Collection<T>> R toCollection(R targetCollection, Collection<T> source)
+    
+This one expects target collection and source collection and just takes one element from source and adds it to target. Use this only for value types.
+
+    mapper
+        .from(AuthorEntity.class)
+        .to(AuthorDto.class)
+        .forRule((entity, dto, magicMapper) -> {
+            dto.setId(entity.getId());
+            dto.setName(entity.getAuthorName());
+            dto.setBornOn(entity.getDate());
+            dto.setBookDto(new LinkedList<>());
+            dto.setBookDto(
+                magicMapper.toCollection(new LinkedList<>(), BookDto.class, entity.getBookEntity())
+            );
+        });
+        
+Recursive collection transformations are still not supported.
+
