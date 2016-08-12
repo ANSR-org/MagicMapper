@@ -1,14 +1,12 @@
-package perfect_match.models;
+package collections.complex_types.models;
 
-import java.util.Date;
-
-public class AuthorDto {
-
-    private int id;
+/**
+ * Created by RoYaL on 8/12/2016.
+ */
+public class BookDto {
+    private long id;
 
     private String name;
-
-    private Date bornOn;
 
     /**
      * This constructor is needed by the framework.
@@ -16,21 +14,20 @@ public class AuthorDto {
      * one will be created by default. Once you define a constructor
      * you need to define a parameterless one as well
      */
-    public AuthorDto() {
+    public BookDto() {
 
     }
 
-    public AuthorDto(int id, String name, Date bornOn) {
+    public BookDto(long id, String bookName) {
         this.setId(id);
-        this.setName(name);
-        this.setBornOn(bornOn);
+        this.setName(bookName);
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -40,13 +37,5 @@ public class AuthorDto {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Date getBornOn() {
-        return bornOn;
-    }
-
-    public void setBornOn(Date bornOn) {
-        this.bornOn = bornOn;
     }
 }

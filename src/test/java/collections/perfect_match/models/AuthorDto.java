@@ -1,6 +1,7 @@
-package perfect_match.models;
+package collections.perfect_match.models;
 
 import java.util.Date;
+import java.util.List;
 
 public class AuthorDto {
 
@@ -9,6 +10,8 @@ public class AuthorDto {
     private String name;
 
     private Date bornOn;
+
+    private List<Integer> bookRates;
 
     /**
      * This constructor is needed by the framework.
@@ -48,5 +51,13 @@ public class AuthorDto {
 
     public void setBornOn(Date bornOn) {
         this.bornOn = bornOn;
+    }
+
+    public List<Integer> getBookRates() {
+        return bookRates;
+    }
+
+    public void setBookRates(List<Integer> bookRates) {
+        this.bookRates = bookRates;
     }
 }

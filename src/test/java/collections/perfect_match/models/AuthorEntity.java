@@ -1,8 +1,10 @@
-package perfect_match.models;
+package collections.perfect_match.models;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
-public class AuthorDto {
+public class AuthorEntity {
 
     private int id;
 
@@ -10,20 +12,17 @@ public class AuthorDto {
 
     private Date bornOn;
 
-    /**
-     * This constructor is needed by the framework.
-     * If you don't have any constructors, a parameterless
-     * one will be created by default. Once you define a constructor
-     * you need to define a parameterless one as well
-     */
-    public AuthorDto() {
+    private List<Integer> bookRates;
+
+    public AuthorEntity() {
 
     }
 
-    public AuthorDto(int id, String name, Date bornOn) {
+    public AuthorEntity(int id, String name, Date bornOn) {
         this.setId(id);
         this.setName(name);
         this.setBornOn(bornOn);
+        this.bookRates = new ArrayList<>();
     }
 
     public int getId() {
@@ -48,5 +47,13 @@ public class AuthorDto {
 
     public void setBornOn(Date bornOn) {
         this.bornOn = bornOn;
+    }
+
+    public List<Integer> getBookRates() {
+        return bookRates;
+    }
+
+    public void setBookRates(List<Integer> bookRates) {
+        this.bookRates = bookRates;
     }
 }

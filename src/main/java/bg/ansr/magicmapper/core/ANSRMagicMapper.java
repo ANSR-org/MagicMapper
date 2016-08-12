@@ -4,6 +4,7 @@ import bg.ansr.magicmapper.core.field.FieldMap;
 import bg.ansr.magicmapper.core.rule.RuleLambda;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -39,6 +40,28 @@ public class ANSRMagicMapper implements MagicMapper {
         return (T)this.definedMappings.get(from.getClass())
                 .get(to)
                 .apply(from);
+    }
+
+    @Override
+    public <T, R extends Collection<T>> R toCollection(R targetCollection, Collection<T> source) {
+        source.stream().forEach(targetCollection::add);
+
+        return targetCollection;
+    }
+
+    @Override
+    public <T, C, R extends Collection<C>> R toCollection(R targetCollection, Class<C> targetType, Collection<T>
+            source) {
+        source.stream().forEach(el -> targetCollection.add(this.map(el, targetType)));
+
+        return targetCollection;
+    }
+
+    @Override
+    public <T, C, S extends Collection<T>, R extends Class<C>, V extends Collection<C>> V toCollection(R targetType, S source) throws IllegalAccessException, InstantiationException {
+        V targetCollection = (V)source.getClass().newInstance();
+
+        return this.toCollection(targetCollection, targetType, source);
     }
 
     private Function<Object, Object> getStandardMappingLambda(Class resultClass) {
