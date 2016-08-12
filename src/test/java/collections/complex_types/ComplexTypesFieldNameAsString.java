@@ -90,7 +90,6 @@ public class ComplexTypesFieldNameAsString {
         books.add(new BookEntity(12, "Firestarter"));
         books.add(new BookEntity(42, "War && Peace"));
 
-
         AuthorEntity entity = new AuthorEntity(6, "John", bornOn, books);
 
         AuthorDto dto = mapper.map(entity, AuthorDto.class);

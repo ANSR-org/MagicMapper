@@ -65,11 +65,20 @@ public class ANSRMagicMapper implements MagicMapper {
     }
 
     private Function<Object, Object> getStandardMappingLambda(Class resultClass) {
+        HashMap<String, Field> targetFields = new HashMap<>();
         return sourceObject -> {
             try {
                 Object result = resultClass.newInstance();
                 for (Field sourceField : sourceObject.getClass().getDeclaredFields()) {
+                    if (targetFields.containsKey(sourceField.getName()+"-"+sourceField.getType())) {
+                        Field targetField = targetFields.get(sourceField.getName()+"-"+sourceField.getType());
+                        targetField.setAccessible(true);
+                        sourceField.setAccessible(true);
+                        targetField.set(result, sourceField.get(sourceObject));
+                        continue;
+                    }
                     for (Field targetField : resultClass.getDeclaredFields()) {
+                        targetFields.putIfAbsent(targetField.getName()+"-"+targetField.getType().getName(), targetField);
                         if (!targetField.getName().equals(sourceField.getName()) ||
                                 targetField.getType() != sourceField.getType()) {
                             continue;
@@ -78,6 +87,8 @@ public class ANSRMagicMapper implements MagicMapper {
                         targetField.setAccessible(true);
                         sourceField.setAccessible(true);
                         targetField.set(result, sourceField.get(sourceObject));
+
+                        break;
                     }
                 }
 
